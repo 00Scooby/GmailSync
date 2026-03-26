@@ -1,3 +1,4 @@
+[English version here](README_EN.md)
 # 🚀 Gmail IMAP Proxy Fetcher
 
 Dieses Projekt ist ein Workaround für die Einstellung des klassischen POP3-Imports in der Gmail Web-App. Es ermöglicht es, E-Mails von externen IMAP-Servern (wie Hosttech, Hostpoint, BlueWin etc.) abzurufen und nahtlos in ein Gmail-Postfach zu importieren.
