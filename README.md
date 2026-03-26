@@ -82,6 +82,16 @@ function setupTrigger() {
   ScriptApp.newTrigger('fetchAndImportMails').timeBased().everyMinutes(5).create();
 }
 ```
+### 3. Den Autopiloten starten
+Sobald der Code im Editor gespeichert ist:
+
+1.  **Erster Test:** Wähle oben im Dropdown die Funktion `fetchAndImportMails` aus und klicke auf **Ausführen**. 
+    - *Hinweis:* Google wird dich nach Berechtigungen fragen (Gmail API & Externe Verbindungen). Da es dein eigenes Script ist, kannst du diese bestätigen.
+    - Prüfe das Protokoll unten: Erscheint dort "Erfolg" oder "Importiert", hat alles geklappt!
+2.  **Dauerbetrieb aktivieren:** Wähle im Dropdown die Funktion `setupTrigger` aus und klicke auf **Ausführen**.
+    - Damit wird ein automatischer Zeitplaner erstellt, der das Script ab sofort alle 5 Minuten im Hintergrund startet.
+3.  **Fertig!** Du kannst den Tab jetzt schliessen. Dein Gmail-Postfach wird nun vollautomatisch synchronisiert.
+
 ## 🔒 Sicherheitshinweise
 - Veröffentliche niemals deine echten Passwörter oder den `API_KEY`.
 - Nutze die `.gitignore`, um lokale `.env` Dateien vom Repository fernzuhalten.
