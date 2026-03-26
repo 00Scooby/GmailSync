@@ -15,7 +15,7 @@ const checkAuth = (req, res, next) => {
     next();
 };
 
-aapp.post('/fetch-mails', checkAuth, async (req, res) => {
+app.post('/fetch-mails', checkAuth, async (req, res) => {
     // Wir holen uns den neuen Schalter "deleteAfterFetch" aus dem Request
     const { host, user, pass, deleteAfterFetch } = req.body;
 
