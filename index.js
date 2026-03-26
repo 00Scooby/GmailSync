@@ -37,15 +37,22 @@ app.post('/fetch-mails', checkAuth, async (req, res) => {
         let emails = [];
 
         try {
-            // DER FIX: Wir checken erst, ob ueberhaupt Mails im Postfach liegen
-            if (client.mailbox.exists > 0) {
-                for await (let message of client.fetch('1:*', { envelope: true })) {
+            // 1. Suche nur nach ungelesenen Mails
+            let unreadMails = await client.search({ seen: false });
+
+            if (unreadMails && unreadMails.length > 0) {
+                // 2. Hole die komplette, rohe Mail (source) ab
+                for await (let message of client.fetch(unreadMails, { source: true, envelope: true })) {
                     emails.push({
                         uid: message.uid,
                         subject: message.envelope.subject,
-                        from: message.envelope.from[0].address, // ACHTUNG: Hier ggf. absichern
-                        date: message.envelope.date
+                        // Wir wandeln die Mail in Base64 um, damit sie auf dem Weg 
+                        // zu Google nicht durch Sonderzeichen kaputtgeht
+                        raw: message.source.toString('base64')
                     });
+
+                    // 3. Markiere die Mail auf dem Hosttech-Server als gelesen (\Seen)
+                    await client.messageFlagsAdd(message.uid, ['\\Seen'], { uid: true });
                 }
             }
         } finally {
