@@ -15,8 +15,9 @@ const checkAuth = (req, res, next) => {
     next();
 };
 
-app.post('/fetch-mails', checkAuth, async (req, res) => {
-    const { host, user, pass } = req.body;
+aapp.post('/fetch-mails', checkAuth, async (req, res) => {
+    // Wir holen uns den neuen Schalter "deleteAfterFetch" aus dem Request
+    const { host, user, pass, deleteAfterFetch } = req.body;
 
     if (!host || !user || !pass) {
         return res.status(400).json({ error: 'Fehlende Parameter: host, user oder pass' });
@@ -31,22 +32,20 @@ app.post('/fetch-mails', checkAuth, async (req, res) => {
         tls: { rejectUnauthorized: false }
     });
 
-    // FIX 1: Hintergrund-Fehler abfangen, damit die App niemals abstuerzt!
     client.on('error', err => {
-        console.error(`IMAP Client Error für ${user}:`, err.message);
+        console.error(`IMAP Client Error fuer ${user}:`, err.message);
     });
 
     try {
         await client.connect();
         let lock = await client.getMailboxLock('INBOX');
         let emails = [];
-        let uidsToMark = []; // Hier sammeln wir die IDs
+        let uidsToMark = [];
 
         try {
             let unreadMails = await client.search({ seen: false });
 
             if (unreadMails && unreadMails.length > 0) {
-                // FIX 2: Zuerst ALLE Mails sauber abholen (Stream nicht blockieren)
                 for await (let message of client.fetch(unreadMails, { source: true, envelope: true })) {
                     emails.push({
                         uid: message.uid,
@@ -56,9 +55,15 @@ app.post('/fetch-mails', checkAuth, async (req, res) => {
                     uidsToMark.push(message.uid);
                 }
 
-                // FIX 3: Erst wenn der Download fertig ist, markieren wir alle auf einmal als gelesen
+                // FIX 3: Der dynamische Schalter!
                 if (uidsToMark.length > 0) {
-                    await client.messageFlagsAdd(uidsToMark, ['\\Seen'], { uid: true });
+                    if (deleteAfterFetch) {
+                        // Wenn der Schalter auf true steht -> gnadenlos loeschen
+                        await client.messageDelete(uidsToMark, { uid: true });
+                    } else {
+                        // Sonst einfach nur als gelesen markieren
+                        await client.messageFlagsAdd(uidsToMark, ['\\Seen'], { uid: true });
+                    }
                 }
             }
         } finally {
