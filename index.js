@@ -16,7 +16,6 @@ const checkAuth = (req, res, next) => {
 };
 
 app.post('/fetch-mails', checkAuth, async (req, res) => {
-    // Jetzt nehmen wir auch den host dynamisch aus dem Request
     const { host, user, pass } = req.body;
 
     if (!host || !user || !pass) {
@@ -28,31 +27,38 @@ app.post('/fetch-mails', checkAuth, async (req, res) => {
         port: 993,
         secure: true,
         auth: { user, pass },
-        logger: false
+        logger: false,
+        tls: { rejectUnauthorized: false }
+    });
+
+    // FIX 1: Hintergrund-Fehler abfangen, damit die App niemals abstuerzt!
+    client.on('error', err => {
+        console.error(`IMAP Client Error für ${user}:`, err.message);
     });
 
     try {
         await client.connect();
         let lock = await client.getMailboxLock('INBOX');
         let emails = [];
+        let uidsToMark = []; // Hier sammeln wir die IDs
 
         try {
-            // 1. Suche nur nach ungelesenen Mails
             let unreadMails = await client.search({ seen: false });
 
             if (unreadMails && unreadMails.length > 0) {
-                // 2. Hole die komplette, rohe Mail (source) ab
+                // FIX 2: Zuerst ALLE Mails sauber abholen (Stream nicht blockieren)
                 for await (let message of client.fetch(unreadMails, { source: true, envelope: true })) {
                     emails.push({
                         uid: message.uid,
                         subject: message.envelope.subject,
-                        // Wir wandeln die Mail in Base64 um, damit sie auf dem Weg 
-                        // zu Google nicht durch Sonderzeichen kaputtgeht
                         raw: message.source.toString('base64')
                     });
+                    uidsToMark.push(message.uid);
+                }
 
-                    // 3. Markiere die Mail auf dem Hosttech-Server als gelesen (\Seen)
-                    await client.messageFlagsAdd(message.uid, ['\\Seen'], { uid: true });
+                // FIX 3: Erst wenn der Download fertig ist, markieren wir alle auf einmal als gelesen
+                if (uidsToMark.length > 0) {
+                    await client.messageFlagsAdd(uidsToMark, ['\\Seen'], { uid: true });
                 }
             }
         } finally {
@@ -63,8 +69,8 @@ app.post('/fetch-mails', checkAuth, async (req, res) => {
         res.json({ success: true, emails });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'IMAP Verbindungsfehler' });
+        console.error("Fehler beim Abruf:", error.message);
+        res.status(500).json({ error: 'IMAP Prozessfehler' });
     }
 });
 
