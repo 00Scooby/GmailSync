@@ -23,9 +23,11 @@ PORT=3000
 `POST /fetch-mails`
 
 **Payload:**
+```json
 {
   "apiKey": "dein_selbst_gewaehlter_api_schluessel",
   "host": "imap.dein-provider.ch",
   "user": "info@deinedomain.ch",
   "pass": "postfach_passwort"
 }
+```

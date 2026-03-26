@@ -37,13 +37,16 @@ app.post('/fetch-mails', checkAuth, async (req, res) => {
         let emails = [];
 
         try {
-            for await (let message of client.fetch('1:*', { envelope: true })) {
-                emails.push({
-                    uid: message.uid,
-                    subject: message.envelope.subject,
-                    from: message.envelope.from[0].address,
-                    date: message.envelope.date
-                });
+            // DER FIX: Wir checken erst, ob ueberhaupt Mails im Postfach liegen
+            if (client.mailbox.exists > 0) {
+                for await (let message of client.fetch('1:*', { envelope: true })) {
+                    emails.push({
+                        uid: message.uid,
+                        subject: message.envelope.subject,
+                        from: message.envelope.from[0].address, // ACHTUNG: Hier ggf. absichern
+                        date: message.envelope.date
+                    });
+                }
             }
         } finally {
             lock.release();
