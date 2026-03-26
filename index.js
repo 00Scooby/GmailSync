@@ -7,7 +7,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Simpler Sicherheitscheck
+// Sicherheitscheck mit deinem selbst ausgedachten API Key
 const checkAuth = (req, res, next) => {
     if (req.body.apiKey !== process.env.API_KEY) {
         return res.status(403).json({ error: 'Zugriff verweigert' });
@@ -16,13 +16,16 @@ const checkAuth = (req, res, next) => {
 };
 
 app.post('/fetch-mails', checkAuth, async (req, res) => {
-    // Wir übergeben User und Passwort vom Google Apps Script,
-    // damit wir nicht für jedes Konto eine eigene Route brauchen.
-    const { user, pass } = req.body;
+    // Jetzt nehmen wir auch den host dynamisch aus dem Request
+    const { host, user, pass } = req.body;
+
+    if (!host || !user || !pass) {
+        return res.status(400).json({ error: 'Fehlende Parameter: host, user oder pass' });
+    }
 
     const client = new ImapFlow({
-        host: process.env.IMAP_HOST,
-        port: process.env.IMAP_PORT,
+        host: host,
+        port: 993,
         secure: true,
         auth: { user, pass },
         logger: false
@@ -34,7 +37,6 @@ app.post('/fetch-mails', checkAuth, async (req, res) => {
         let emails = [];
 
         try {
-            // Holt die Metadaten der Mails (hier zum Start vereinfacht)
             for await (let message of client.fetch('1:*', { envelope: true })) {
                 emails.push({
                     uid: message.uid,
