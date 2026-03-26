@@ -1,0 +1,5 @@
+# Abhängigkeiten (riesig, lädt man nie mit hoch)
+node_modules/
+
+# Geheime Zugangsdaten (Passwörter, API Keys - extrem wichtig!)
+.env
