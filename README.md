@@ -1,33 +1,91 @@
-# Private Mail Fetcher Proxy
+# 🚀 Gmail IMAP Proxy Fetcher
 
-Ein minimalistischer Node.js API-Service, um E-Mails via IMAP abzurufen und als JSON bereitzustellen. Entwickelt als Workaround fuer die Einstellung des POP3-Imports in der Gmail Web-App.
+Dieses Projekt ist ein Workaround für die Einstellung des klassischen POP3-Imports in der Gmail Web-App. Es ermöglicht es, E-Mails von externen IMAP-Servern (wie Hosttech, Hostpoint, BlueWin etc.) abzurufen und nahtlos in ein Gmail-Postfach zu importieren.
 
-## Features
-- IMAP-Verbindung zu externen Mailservern
-- Multi-Account & Multi-Host faehig durch dynamische Parameter
-- Sichere API-Key Authentifizierung
+## 🛠 Features
+- **Sicher:** Keine Passwörter im Code (Nutzung von Environment Variables & Google Script Properties).
+- **Flexibel:** Unterstützt beliebig viele externe E-Mail-Konten.
+- **Smart:** Markiert Mails als gelesen oder löscht sie nach dem Import (konfigurierbar).
+- **Kostenlos:** Läuft perfekt auf dem Free-Tier von Render.com.
 
-## Setup
+---
 
-1. Abhängigkeiten installieren: `npm install`
-2. `.env` Datei erstellen (siehe unten).
-3. Server starten: `npm start` oder `node index.js`
+## 🏗 Setup: Der Proxy (Node.js)
 
-## Umgebungsvariablen (.env)
+1. **Repo forken oder klonen.**
+2. **Hosting:** Lade das Projekt bei einem Cloud-Anbieter wie [Render](https://render.com) hoch (Web Service).
+3. **Umgebungsvariablen:** Hinterlege in den Einstellungen deines Hosting-Anbieters folgende Variable:
+   - `API_KEY`: Ein von dir frei gewählter, sicherer Schlüssel.
+4. **Deployment:** Der Server startet automatisch via `node index.js`.
 
-API_KEY=dein_selbst_gewaehlter_api_schluessel
-PORT=3000
+---
 
-## API Endpunkt
+## 📜 Setup: Google Apps Script
 
-`POST /fetch-mails`
+Um den Abruf zu automatisieren, erstelle ein neues Projekt auf [script.google.com](https://script.google.com) und nutze den folgenden Code:
 
-**Payload:**
-```json
-{
-  "apiKey": "dein_selbst_gewaehlter_api_schluessel",
-  "host": "imap.dein-provider.ch",
-  "user": "info@deinedomain.ch",
-  "pass": "postfach_passwort"
+### 1. Script-Eigenschaften hinterlegen
+Gehe in die Projekteinstellungen (Zahnrad) -> Skripteigenschaften und füge folgende Keys hinzu:
+- `API_KEY`: Dein gewählter Key vom Proxy.
+- `PASS_ACCOUNT1`: Das Passwort deines ersten Mail-Kontos (usw.).
+
+### 2. Der Code
+Kopiere diesen Code in den Editor und aktiviere unter **Dienste (+)** die **Gmail API**.
+
+```javascript
+const PROXY_URL = "DEINE_RENDER_URL/fetch-mails";
+const props = PropertiesService.getScriptProperties();
+
+const ACCOUNTS = [
+  { 
+    host: "imap.dein-provider.ch", 
+    user: "info@deinedomain.ch", 
+    pass: props.getProperty('PASS_ACCOUNT1'),
+    deleteAfterFetch: false // true = loeschen, false = nur als gelesen markieren
+  }
+];
+
+function fetchAndImportMails() {
+  const API_KEY = props.getProperty('API_KEY');
+  ACCOUNTS.forEach(account => {
+    const options = {
+      method: "post",
+      contentType: "application/json",
+      payload: JSON.stringify({
+        apiKey: API_KEY,
+        ...account
+      }),
+      muteHttpExceptions: true
+    };
+
+    try {
+      const response = UrlFetchApp.fetch(PROXY_URL, options);
+      const data = JSON.parse(response.getContentText());
+
+      if (data.emails && data.emails.length > 0) {
+        data.emails.forEach(mail => {
+          const webSafeBase64 = Utilities.base64EncodeWebSafe(Utilities.base64Decode(mail.raw));
+          Gmail.Users.Messages.insert({
+            raw: webSafeBase64,
+            labelIds: ['INBOX', 'UNREAD']
+          }, 'me');
+        });
+        console.log(data.emails.length + " Mails importiert fuer " + account.user);
+      }
+    } catch (e) {
+      console.error("Fehler: " + e.toString());
+    }
+  });
+}
+
+function setupTrigger() {
+  ScriptApp.newTrigger('fetchAndImportMails').timeBased().everyMinutes(5).create();
 }
 ```
+## 🔒 Sicherheitshinweise
+- Veröffentliche niemals deine echten Passwörter oder den `API_KEY`.
+- Nutze die `.gitignore`, um lokale `.env` Dateien vom Repository fernzuhalten.
+- Dieses Projekt nutzt das `imapflow` Modul für eine sichere TLS-Verbindung.
+
+## ⚖️ Lizenz
+MIT License - Feel free to use and contribute!
