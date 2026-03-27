@@ -2,7 +2,7 @@
 [![Docker Publish](https://github.com/00Scooby/GmailSync/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/00Scooby/GmailSync/actions/workflows/docker-publish.yml)
 [![Latest Release](https://img.shields.io/github/v/release/00Scooby/GmailSync?color=blue&logo=github)](https://github.com/00Scooby/GmailSync/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Docker Image Size](https://img.shields.io/docker/image-size/00scooby/gmailsync/latest?label=docker%20size&logo=docker&color=2496ed)](https://ghcr.io/00scooby/gmailsync)
+[![Docker Package](https://img.shields.io/badge/docker-ghcr.io-blue.svg?logo=docker&logoColor=white)](https://ghcr.io/00scooby/gmailsync)
 
 [Deutsche Version hier](README.md)
 
