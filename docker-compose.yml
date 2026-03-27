@@ -1,0 +1,10 @@
+services:
+  gmail-proxy:
+    image: ghcr.io/00scooby/gmailsync:latest
+    container_name: gmail-imap-proxy
+    ports:
+      - "3000:3000"
+    environment:
+      - API_KEY=dein_geheimer_schluessel # Hier den API-Key setzen
+      - PORT=3000
+    restart: unless-stopped

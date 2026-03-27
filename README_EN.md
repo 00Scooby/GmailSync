@@ -21,6 +21,29 @@ This project is a workaround for the deprecation of the classic POP3 import in t
 
 ---
 
+## 🐳 Setup: Docker (Self-hosted)
+
+You can also run the proxy via Docker.
+
+### Docker Compose
+Create a `docker-compose.yml`:
+
+```yaml
+services:
+  gmail-proxy:
+    image: ghcr.io/YOUR_GITHUB_USER/gmailsync:latest
+    container_name: gmail-imap-proxy
+    ports:
+      - "3000:3000"
+    environment:
+      - API_KEY=dein_geheimer_schluessel
+    restart: unless-stopped
+```
+
+Start the container with: `docker compose up -d`
+
+---
+
 ## 📜 Setup: Google Apps Script
 
 To automate the fetching process, create a new project at [script.google.com](https://script.google.com) and use the following code:

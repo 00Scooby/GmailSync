@@ -21,6 +21,29 @@ Dieses Projekt ist ein Workaround für die Einstellung des klassischen POP3-Impo
 
 ---
 
+## 🐳 Setup: Docker (Selbsthostend)
+
+Du kannst den Proxy auch bequem via Docker betreiben.
+
+### Docker Compose
+Erstelle eine `docker-compose.yml`:
+
+```yaml
+services:
+  gmail-proxy:
+    image: ghcr.io/YOUR_GITHUB_USER/gmailsync:latest
+    container_name: gmail-imap-proxy
+    ports:
+      - "3000:3000"
+    environment:
+      - API_KEY=dein_geheimer_schluessel
+    restart: unless-stopped
+```
+
+Starte den Container mit: `docker compose up -d`
+
+---
+
 ## 📜 Setup: Google Apps Script
 
 Um den Abruf zu automatisieren, erstelle ein neues Projekt auf [script.google.com](https://script.google.com) und nutze den folgenden Code:
