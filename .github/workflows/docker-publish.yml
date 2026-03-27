@@ -22,11 +22,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Dieser Schritt wandelt den Namen in Kleinbuchstaben um
+      - name: Downcase Repo Name
+        run: |
+          echo "REPO_LC=${GITHUB_REPOSITORY_OWNER,,}" >> ${GITHUB_ENV}
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/gmailsync:latest
-            ghcr.io/${{ github.repository_owner }}/gmailsync:${{ github.event.release.tag_name }}
+            ghcr.io/${{ env.REPO_LC }}/gmailsync:latest
+            ghcr.io/${{ env.REPO_LC }}/gmailsync:${{ github.event.release.tag_name }}
