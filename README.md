@@ -1,5 +1,10 @@
-[English version here](README_EN.md)
 # 🚀 Gmail IMAP Proxy Fetcher
+[![Docker Publish](https://github.com/00Scooby/GmailSync/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/00Scooby/GmailSync/actions/workflows/docker-publish.yml)
+[![Latest Release](https://img.shields.io/github/v/release/00Scooby/GmailSync?color=blue&logo=github)](https://github.com/00Scooby/GmailSync/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Docker Image Size](https://img.shields.io/docker/image-size/00scooby/gmailsync/latest?label=docker%20size&logo=docker&color=2496ed)](https://ghcr.io/00scooby/gmailsync)
+
+[English version here](README_EN.md)
 
 Dieses Projekt ist ein Workaround für die Einstellung des klassischen POP3-Imports in der Gmail Web-App. Es ermöglicht es, E-Mails von externen IMAP-Servern (wie Hosttech, Hostpoint, BlueWin etc.) abzurufen und nahtlos in ein Gmail-Postfach zu importieren.
 
